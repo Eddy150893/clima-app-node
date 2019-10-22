@@ -1,4 +1,5 @@
-const axios = require('axios');
+const lugar = require('./lugar/lugar');
+const clima = require('./clima/clima');
 const argv = require('yargs').options({
     direccion: {
         alias: 'd',
@@ -6,24 +7,18 @@ const argv = require('yargs').options({
         demand: true
     }
 }).argv;
-/* Tenemos que registrarnos en un sitio web 
-https://rapidapi.com/dev132/api/city-geo-location-lookup
-user name: EddyPaz
-correo: eddypaz150893@gmail.com
-pass: carne201404346*/
 
+const getInfo = async(direccion) => {
+    try {
+        const coords = await lugar.getLugarLatLng(direccion)
+        const temp = await clima.getClima(coords.lat, coords.lng);
+        return `El clima de ${coords.direccion} es de ${ temp}.`;
+    } catch (e) {
+        return `No se pudo determinar el clima de ${ direccion}`;
+    }
 
-const encodedUrl = encodeURI(argv.direccion);
-console.log(encodedUrl);
-const instance = axios.create({
-    baseURL: `https://devru-latitude-longitude-find-v1.p.rapidapi.com/latlon.php?location=${encodedUrl}`,
-    headers: { 'x-rapidapi-key': 'd2a3305526msh4144be7e4deb9f3p1a354ajsn050e3f01486b' }
-});
+}
 
-instance.get()
-    .then(resp => {
-        console.log(resp.data.Results[0]);
-    })
-    .catch(err => {
-        console.log('ERROR!!!!', err)
-    });
+getInfo(argv.direccion)
+    .then(console.log)
+    .catch(console.log);
